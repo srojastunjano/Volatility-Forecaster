@@ -1,6 +1,6 @@
 import numpy as np
 import pandas as pd
-from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import MinMaxScaler
 import yfinance as yf
 
 
@@ -53,7 +53,7 @@ def prepare_data():
     X_train_raw, X_test_raw = X_raw[:split_idx], X_raw[split_idx:]
     y_train_raw, y_test_raw = y_raw[:split_idx], y_raw[split_idx:]
     
-    scaler = StandardScaler()
+    scaler = MinMaxScaler()
     
     # must flatten X_train to fit the scaler, then reshape back to 3D
     # (samples * seq_length, features)

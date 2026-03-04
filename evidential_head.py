@@ -27,9 +27,8 @@ class EvidentialRegressionHead(layers.Layer):
         # β (Scale): Softplus activation. Must be strictly > 0.
         beta = tf.nn.softplus(beta_raw) + eps
 
-        # Concatenate the constrained parameters back into a single tensor
-        # Output shape: (batch_size, 4)
-        # This formatting makes it highly compatible with custom Keras loss functions
+        # concatenate the constrained parameters back into a single tensor
+        # (batch_size, 4)
         evidential_output = tf.concat([gamma, v, alpha, beta], axis=-1)
         
         return evidential_output
