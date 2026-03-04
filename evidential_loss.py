@@ -16,8 +16,7 @@ class EvidentialLoss(tf.keras.losses.Loss):
         gamma, v, alpha, beta = tf.split(y_pred, num_or_size_splits=4, axis=-1)
         
         y_true = tf.cast(y_true, dtype=gamma.dtype)
-
-        # Calculates the Negative Log-Likelihood of the Student-t distribution
+        y_true = tf.reshape(y_true, (-1, 1))
 
         # scaling factor based on beta and evidence
         omega = 2.0 * beta * (1.0 + v)
@@ -35,11 +34,8 @@ class EvidentialLoss(tf.keras.losses.Loss):
 
         # Penalizes high evidence when the absolute error is high
         error = tf.abs(y_true - gamma)
-
         evidence = 2.0 * v + alpha
-        
         reg_loss = error * evidence
-        
         total_loss = nll + (self.coeff * reg_loss)
         
         return tf.reduce_mean(total_loss)

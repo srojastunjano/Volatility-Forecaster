@@ -39,13 +39,19 @@ def create_sequences(data, seq_length):
         y.append(target)
     return np.array(X), np.array(y)
 
-def prepare_data():
-    rv_data = get_realized_variance_yfinance('AAPL', period='600d')
+def prepare_data(symbol='NVDA', period='600d', seq_length=10):
+
+    rv_data = get_realized_variance_yfinance(symbol, period=period)
     rv_values = rv_data[['realized_variance']].values
+
+    if rv_data is None or rv_data.empty:
+        raise ValueError(
+            f"Data extraction failed for {symbol}. "
+            f"Note: yfinance strictly limits intraday intervals (like '1h') to the last 730 days. "
+            f"Check your period argument ('{period}') or your internet connection."
+        )
     
-    SEQUENCE_LENGTH = 10
-    
-    X_raw, y_raw = create_sequences(rv_values, SEQUENCE_LENGTH)
+    X_raw, y_raw = create_sequences(rv_values, seq_length)
 
     # (e.g., 80% Train, 20% Test)
     split_idx = int(len(X_raw) * 0.8)
@@ -72,4 +78,4 @@ def prepare_data():
     print(f"X_test shape:  {X_test.shape}")
     print(f"y_test shape:  {y_test.shape}")
 
-    return X_train, X_test, y_train, y_test
+    return X_train, X_test, y_train, y_test, scaler

@@ -8,7 +8,7 @@ class PositionalEncoding(layers.Layer):
         self.pos_encoding = self.positional_encoding(sequence_length, d_model)
 
     def get_angles(self, pos, i, d_model):
-        angles = 1 / tf.pow(10000, (2 * (i // 2)) / tf.cast(d_model, tf.float32))
+        angles = 1 / tf.pow(10000.0, (2 * (i // 2)) / tf.cast(d_model, tf.float32))
         return pos * angles
 
     def positional_encoding(self, position, d_model):
@@ -19,7 +19,10 @@ class PositionalEncoding(layers.Layer):
         )
         sines = tf.math.sin(angle_rads[:, 0::2])
         cosines = tf.math.cos(angle_rads[:, 1::2])
-        pos_encoding = tf.concat([sines, cosines], axis=-1)
+
+        pos_encoding = tf.stack([sines, cosines], axis=-1)
+        pos_encoding = tf.reshape(pos_encoding, [position, d_model])
+
         return pos_encoding[tf.newaxis, ...]
 
     def call(self, inputs):

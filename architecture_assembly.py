@@ -24,7 +24,7 @@ def build_ibdl_model(input_shape, d_model=32, num_heads=2, ff_dim=64, num_layers
 if __name__ == "__main__":
     # data shape is roughly (samples, 10, 1)
     
-    X_train, X_test, y_train, y_test = data_extraction.prepare_data
+    X_train, X_test, y_train, y_test, scaler = data_extraction.prepare_data()
 
     seq_len = X_train.shape[1]  # 10
     num_features = X_train.shape[2] # 1
