@@ -39,7 +39,7 @@ def create_sequences(data, seq_length):
         y.append(target)
     return np.array(X), np.array(y)
 
-if __name__ == "__main__":
+def prepare_data():
     rv_data = get_realized_variance_yfinance('AAPL', period='600d')
     rv_values = rv_data[['realized_variance']].values
     
@@ -71,3 +71,5 @@ if __name__ == "__main__":
     print(f"y_train shape: {y_train.shape} -> [samples, features]")
     print(f"X_test shape:  {X_test.shape}")
     print(f"y_test shape:  {y_test.shape}")
+
+    return X_train, X_test, y_train, y_test

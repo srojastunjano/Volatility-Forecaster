@@ -4,25 +4,17 @@ from tensorflow.keras import layers
 class EvidentialRegressionHead(layers.Layer):
     def __init__(self, **kwargs):
         super(EvidentialRegressionHead, self).__init__(**kwargs)
-        # 1. The Dense Mapping: A single dense layer with exactly 4 output units
+        # single dense layer with exactly 4 output units
         self.dense = layers.Dense(4, activation=None)
 
     def call(self, inputs):
-        # Pass the latent vector z_tilde through the dense layer
-        # Expected input shape: (batch_size, d_model)
+        #pass the latent vector z_tilde through the dense layer
+        # (batch_size, d_model)
         raw_output = self.dense(inputs)
 
-        # 2. Split the 4 outputs to apply individual activations
-        # tf.split divides the tensor along the last axis (-1) into 4 separate tensors
         gamma_raw, v_raw, alpha_raw, beta_raw = tf.split(raw_output, num_or_size_splits=4, axis=-1)
-
-        # Define a small epsilon for numerical stability 
-        # (Prevents division by zero or log(0) in the loss function later)
         eps = 1e-6
-
-        # 3. Apply Constraint Activations
         
-        # γ (Mean): No activation (Linear). Represents the predicted Realized Variance.
         gamma = gamma_raw
         
         # v (Evidence): Softplus activation. Must be strictly > 0.

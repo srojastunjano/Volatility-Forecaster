@@ -1,5 +1,6 @@
 import tensorflow as tf
 from tensorflow.keras import layers
+import MCDropout
 
 class PositionalEncoding(layers.Layer):
     def __init__(self, sequence_length, d_model):
@@ -37,18 +38,18 @@ class TransformerEncoderBlock(layers.Layer):
         self.layernorm2 = layers.LayerNormalization(epsilon=1e-6)
         
         # MC Dropout Layers
-        self.dropout1 = layers.Dropout(dropout_rate)
-        self.dropout2 = layers.Dropout(dropout_rate)
+        self.dropout1 = MCDropout(dropout_rate)
+        self.dropout2 = MCDropout(dropout_rate)
 
     def call(self, inputs, training=None):
         # Multi-Head Attention + Residual Connection
         attn_output = self.mha(inputs, inputs)
-        attn_output = self.dropout1(attn_output, training=training)
+        attn_output = self.dropout1(attn_output)
         out1 = self.layernorm1(inputs + attn_output)
 
         # Feed Forward + Residual Connection
         ffn_output = self.ffn(out1)
-        ffn_output = self.dropout2(ffn_output, training=training)
+        ffn_output = self.dropout2(ffn_output)
         return self.layernorm2(out1 + ffn_output)
     
 

@@ -24,8 +24,10 @@ def build_ibdl_model(input_shape, d_model=32, num_heads=2, ff_dim=64, num_layers
 if __name__ == "__main__":
     # data shape is roughly (samples, 10, 1)
     
-    seq_len = data_extraction.X_train.shape[1]  # 10
-    num_features = data_extraction.X_train.shape[2] # 1
+    X_train, X_test, y_train, y_test = data_extraction.prepare_data
+
+    seq_len = X_train.shape[1]  # 10
+    num_features = X_train.shape[2] # 1
     
     model = build_ibdl_model(input_shape=(seq_len, num_features))
     
@@ -39,10 +41,10 @@ if __name__ == "__main__":
     
     print("\nStarting Model Training (Disentangling Uncertainty)...")
     history = model.fit(
-        x=data_extraction.X_train,
-        y=data_extraction.y_train,
+        x=X_train,
+        y=y_train,
         batch_size=32,        
         epochs=50,              
-        validation_data=(data_extraction.X_test, data_extraction.y_test), 
+        validation_data=(X_test, y_test), 
         verbose=1
     )
