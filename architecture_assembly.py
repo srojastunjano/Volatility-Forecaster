@@ -44,7 +44,9 @@ if __name__ == "__main__":
         x=X_train,
         y=y_train,
         batch_size=32,        
-        epochs=50,              
+        epochs=80,              
         validation_data=(X_test, y_test), 
         verbose=1
     )
+
+    model.save("ibdl_volatility_v1.keras")

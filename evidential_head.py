@@ -7,6 +7,10 @@ class EvidentialRegressionHead(layers.Layer):
         # single dense layer with exactly 4 output units
         self.dense = layers.Dense(4, activation=None)
 
+    def get_config(self):
+        config = super().get_config()
+        return config
+
     def call(self, inputs):
         #pass the latent vector z_tilde through the dense layer
         # (batch_size, d_model)

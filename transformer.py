@@ -1,6 +1,6 @@
 import tensorflow as tf
 from tensorflow.keras import layers
-import MCDropout
+from MCDropout import MCDropout
 
 class PositionalEncoding(layers.Layer):
     def __init__(self, sequence_length, d_model):
@@ -10,6 +10,14 @@ class PositionalEncoding(layers.Layer):
     def get_angles(self, pos, i, d_model):
         angles = 1 / tf.pow(10000.0, (2 * (i // 2)) / tf.cast(d_model, tf.float32))
         return pos * angles
+    
+    def get_config(self):
+        config = super().get_config()
+        config.update({
+            "sequence_length": self.pos_encoding.shape[1],
+            "d_model": self.pos_encoding.shape[2],
+        })
+        return config
 
     def positional_encoding(self, position, d_model):
         angle_rads = self.get_angles(
@@ -72,11 +80,11 @@ def build_transformer_backbone(input_shape, d_model, num_heads, ff_dim, num_laye
 
 # Example Initialization:
 # (Sequence length = 22, Features = 12 from M-ALL dataset)
-# backbone = build_transformer_backbone(
-#     input_shape=(22, 12), 
-#     d_model=64, 
-#     num_heads=4, 
-#     ff_dim=128, 
-#     num_layers=2, 
-#     dropout_rate=0.1
-# )
+backbone = build_transformer_backbone(
+    input_shape=(22, 12), 
+    d_model=64, 
+    num_heads=4, 
+    ff_dim=128, 
+    num_layers=2, 
+    dropout_rate=0.1
+)
