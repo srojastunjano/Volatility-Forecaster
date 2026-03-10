@@ -3,8 +3,8 @@ from tensorflow.keras import layers
 from MCDropout import MCDropout
 
 class PositionalEncoding(layers.Layer):
-    def __init__(self, sequence_length, d_model):
-        super(PositionalEncoding, self).__init__()
+    def __init__(self, sequence_length, d_model, **kwargs):
+        super(PositionalEncoding, self).__init__(**kwargs)
         self.pos_encoding = self.positional_encoding(sequence_length, d_model)
 
     def get_angles(self, pos, i, d_model):
@@ -62,6 +62,16 @@ class TransformerEncoderBlock(layers.Layer):
         ffn_output = self.ffn(out1)
         ffn_output = self.dropout2(ffn_output)
         return self.layernorm2(out1 + ffn_output)
+    
+    def get_config(self):
+        config = super().get_config()
+        config.update({
+            "d_model": self.d_model,
+            "num_heads": self.num_heads,
+            "ff_dim": self.ff_dim,
+            "dropout_rate": self.dropout_rate,
+        })
+        return config
     
 
 def build_transformer_backbone(input_shape, d_model, num_heads, ff_dim, num_layers, dropout_rate):

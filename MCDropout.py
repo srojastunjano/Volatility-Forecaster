@@ -1,9 +1,11 @@
 import tensorflow as tf
 from tensorflow.keras import layers
 
+@tf.keras.utils.register_keras_serializable()
 class MCDropout(layers.Dropout):
     def __init__(self, rate, **kwargs):
         super(MCDropout, self).__init__(rate, **kwargs)
+        self.rate = rate
 
     def call(self, inputs, training=None):
         """
@@ -13,3 +15,9 @@ class MCDropout(layers.Dropout):
         the generation of the Credal Set.
         """
         return super().call(inputs, training=True)
+    
+    def get_config(self):
+        # this allows keras to save the rate so it can be loaded later
+        config = super().get_config()
+        config.update({"rate": self.rate})
+        return config

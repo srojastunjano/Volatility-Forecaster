@@ -24,7 +24,7 @@ def get_realized_variance_yfinance(symbol, period="600d"):
     df['date'] = df['timestamp'].dt.date
     df = df.dropna(subset=['log_return'])
 
-    # Calculate True Realized Variance: Sum of squared intraday returns
+    # calculate True Realized Variance: Sum of squared intraday returns
     daily_rv = df.groupby('date')['log_return'].apply(lambda x: np.sum(x**2)).reset_index()
     daily_rv.rename(columns={'log_return': 'realized_variance'}, inplace=True)
     
@@ -53,7 +53,7 @@ def prepare_data(symbol='NVDA', period='600d', seq_length=10):
     
     X_raw, y_raw = create_sequences(rv_values, seq_length)
 
-    # (e.g., 80% Train, 20% Test)
+    # (80% Train, 20% Test)
     split_idx = int(len(X_raw) * 0.8)
     
     X_train_raw, X_test_raw = X_raw[:split_idx], X_raw[split_idx:]
