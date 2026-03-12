@@ -11,7 +11,7 @@ def generate_credal_set(model, X_input, target_scaler, K=80):
     Runs K stochastic forward passes to generate a Credal Set of NIG distributions,
     disentangling Aleatoric and Epistemic uncertainty to form the IHDR.
     """
-    
+
     if len(X_input.shape) == 2:
         X_input = np.expand_dims(X_input, axis=0)
 
@@ -58,7 +58,7 @@ def generate_credal_set(model, X_input, target_scaler, K=80):
     }
 
 if __name__ == "__main__":
-    model_path = "ibdl_volatility_1h.keras"
+    model_path = "ibdl_volatility_1y.keras"
 
 
     model = tf.keras.models.load_model(
@@ -72,7 +72,7 @@ if __name__ == "__main__":
     safe_mode=False,
 )
 
-    X_train, X_test, y_train, y_test, scaler = data_extraction.prepare_data("TSLA","600d",10)
+    X_train, X_test, y_train, y_test, scaler = data_extraction.prepare_data("GLD","max",22)
     sample_window = X_test[0:1] 
     
     results = generate_credal_set(model, sample_window, scaler, K=100)

@@ -38,8 +38,13 @@ class PositionalEncoding(layers.Layer):
     
 
 class TransformerEncoderBlock(layers.Layer):
-    def __init__(self, d_model, num_heads, ff_dim, dropout_rate=0.1):
-        super(TransformerEncoderBlock, self).__init__()
+    def __init__(self, d_model, num_heads, ff_dim, dropout_rate=0.1, **kwargs):
+        super(TransformerEncoderBlock, self).__init__(**kwargs)
+        self.d_model = d_model
+        self.num_heads = num_heads
+        self.ff_dim = ff_dim
+        self.dropout_rate = dropout_rate
+
         self.mha = layers.MultiHeadAttention(num_heads=num_heads, key_dim=d_model)
         self.ffn = tf.keras.Sequential([
             layers.Dense(ff_dim, activation="relu"),

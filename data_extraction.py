@@ -4,31 +4,25 @@ from sklearn.preprocessing import MinMaxScaler
 import yfinance as yf
 
 
-def get_realized_variance_yfinance(symbol, period="600d"):
+def get_realized_variance_yfinance(symbol, period="max"):
     print(f"Fetching intraday data for {symbol} over the last {period}...")
     
     ticker = yf.Ticker(symbol)
-    df = ticker.history(period=period, interval="1h")
+    # Switch to daily data for long-term horizons
+    df = ticker.history(period=period, interval="1d")
     
-    if df.empty:
-        print(f"No data found for {symbol}.")
-        return None
-
-    df = df.reset_index()
+    # Calculate daily log returns
+    df['log_return'] = np.log(df['Close'] / df['Close'].shift(1))
     
-    time_col = 'Datetime' if 'Datetime' in df.columns else 'Date'
-    df = df.rename(columns={time_col: 'timestamp', 'Close': 'close'})
+    # Target: 252-day Rolling Realized Variance (Annualized)
+    # We square the returns and sum them over a 252-day sliding window
+    df['target_rv'] = df['log_return'].pow(2).rolling(window=252).sum()
     
-    df['log_return'] = np.log(df['close'] / df['close'].shift(1))
+    # IMPORTANT: We must shift the target so we are predicting the FUTURE year
+    # based on the CURRENT sequence.
+    df['target_rv'] = df['target_rv'].shift(-252)
     
-    df['date'] = df['timestamp'].dt.date
-    df = df.dropna(subset=['log_return'])
-
-    # calculate True Realized Variance: Sum of squared intraday returns
-    daily_rv = df.groupby('date')['log_return'].apply(lambda x: np.sum(x**2)).reset_index()
-    daily_rv.rename(columns={'log_return': 'realized_variance'}, inplace=True)
-    
-    return daily_rv
+    return df.dropna()
 
 def create_sequences(data, seq_length):
     X, y = [], []
@@ -39,15 +33,14 @@ def create_sequences(data, seq_length):
         y.append(target)
     return np.array(X), np.array(y)
 
-def prepare_data(symbol='NVDA', period='600d', seq_length=10):
+def prepare_data(symbol='NVDA', period='max', seq_length=22):
 
     rv_data = get_realized_variance_yfinance(symbol, period=period)
-    rv_values = rv_data[['realized_variance']].values
+    rv_values = rv_data[['target_rv']].values
 
     if rv_data is None or rv_data.empty:
         raise ValueError(
             f"Data extraction failed for {symbol}. "
-            f"Note: yfinance strictly limits intraday intervals (like '1h') to the last 730 days. "
             f"Check your period argument ('{period}') or your internet connection."
         )
     
