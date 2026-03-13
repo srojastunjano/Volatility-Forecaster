@@ -4,7 +4,6 @@ from tensorflow.keras import layers
 class EvidentialRegressionHead(layers.Layer):
     def __init__(self, **kwargs):
         super(EvidentialRegressionHead, self).__init__(**kwargs)
-        # single dense layer with exactly 4 output units
         self.dense = layers.Dense(4, activation=None)
 
     def get_config(self):
@@ -12,8 +11,8 @@ class EvidentialRegressionHead(layers.Layer):
         return config
 
     def call(self, inputs):
+
         #pass the latent vector z_tilde through the dense layer
-        # (batch_size, d_model)
         raw_output = self.dense(inputs)
 
         gamma_raw, v_raw, alpha_raw, beta_raw = tf.split(raw_output, num_or_size_splits=4, axis=-1)
@@ -21,7 +20,6 @@ class EvidentialRegressionHead(layers.Layer):
         
         gamma = gamma_raw
         
-        # v (Evidence): Softplus activation. Must be strictly > 0.
         # Softplus is a smooth approximation of ReLU: log(exp(x) + 1)
         v = tf.nn.softplus(v_raw) + eps
         
@@ -32,7 +30,6 @@ class EvidentialRegressionHead(layers.Layer):
         beta = tf.nn.softplus(beta_raw) + eps
 
         # concatenate the constrained parameters back into a single tensor
-        # (batch_size, 4)
         evidential_output = tf.concat([gamma, v, alpha, beta], axis=-1)
         
         return evidential_output

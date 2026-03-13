@@ -6,7 +6,6 @@ from evidential_head import EvidentialRegressionHead
 from MCDropout import MCDropout
 from transformer import TransformerEncoderBlock
 
-
 def evaluate(model, X_test, y_test, scaler, K=100):
     """
     Evaluates the model across the entire test set to check coverage.
@@ -50,13 +49,10 @@ def generate_credal_set(model, X_input, target_scaler, K=100):
 
     gamma_real = target_scaler.inverse_transform(gamma)
     
-    # leatoric 
     aleatoric = beta / (alpha - 1.0)
     
-    # epistemic 
     epistemic_nig = beta / (v * (alpha - 1.0))
-    
-    # Empirical Epistemic
+
     credal_epistemic_var = np.var(gamma_real)
     
     # constructing the IHDR 
@@ -96,7 +92,7 @@ if __name__ == "__main__":
     safe_mode=False,
     )   
 
-    X_train, X_test, y_train, y_test, scaler = data_extraction.prepare_data("GME","max",10) # overfitting: (V1:22, V2:10, V3: 63), v4: 10 ,underfitting(v5:22) 
+    X_train, X_test, y_train, y_test, scaler = data_extraction.prepare_data("TSLA","max",10) # overfitting: (V1:22, V2:10, V3: 63), v4: 10 ,underfitting(v5:22) 
     sample_window = X_test[0:1] 
     
     # results = generate_credal_set(model, sample_window, scaler, K)
