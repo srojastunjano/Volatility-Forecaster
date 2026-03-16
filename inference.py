@@ -11,24 +11,42 @@ def evaluate(model, X_test, y_test, scaler, K=100):
     Evaluates the model across the entire test set to check coverage.
     """
     coverages = []
-    errors = []
+    # errors = []
+    abs_errors = []  # To store absolute errors for MAE
+    sq_errors = []   # To store squared errors for MSE/RMSE
     
     for i in range(len(X_test)):
         res = generate_credal_set(model, X_test[i:i+1], scaler, K=K)
-        
-        actual = y_test[i] # future target
+        forecast = res['mean_forecast']
+        # actual = y_test[i] # future target
         low, high = res['ihdr_bounds']
         
-        actual_unscaled = scaler.inverse_transform(actual.reshape(-1, 1))[0,0]
+        actual_scaled = y_test[i] 
+        actual_unscaled = scaler.inverse_transform(actual_scaled.reshape(-1, 1))[0,0]
+
         coverages.append(low <= actual_unscaled <= high)
-        errors.append(abs(actual_unscaled - res['mean_forecast']))
+        abs_errors.append(abs(actual_unscaled - forecast))
+        sq_errors.append((actual_unscaled - forecast)**2)
+        # errors.append(abs(actual_unscaled - res['mean_forecast']))
+
+    mae = np.mean(abs_errors)
+    mse = np.mean(sq_errors)
+    rmse = np.sqrt(mse)
+    coverage_pct = np.mean(coverages) * 100
         
-    print(f"Average Error (MSE): {np.mean(errors):.5f}")
-    print(f"Empirical Coverage: {np.mean(coverages) * 100:.2f}%")
+    print("\n--- Final Test Set Evaluation ---")
+    print(f"Empirical Coverage: {coverage_pct:.2f}%")
+    print(f"Mean Absolute Error (MAE): {mae:.5f}")
+    print(f"Mean Squared Error (MSE):  {mse:.5f}")
+    print(f"Root Mean Sq Error (RMSE): {rmse:.5f}")
 
     return res
 
-def generate_credal_set(model, X_input, target_scaler, K=100):
+
+
+
+# TO DO: ground truth 
+def generate_credal_set(model, X_input, target_scaler, K=100, y_true=None):
     """
     Runs K stochastic forward passes to generate a Credal Set of NIG distributions,
     disentangling Aleatoric and Epistemic uncertainty to form the IHDR.
@@ -92,10 +110,8 @@ if __name__ == "__main__":
     safe_mode=False,
     )   
 
-    X_train, X_test, y_train, y_test, scaler = data_extraction.prepare_data("TSLA","max",10) # overfitting: (V1:22, V2:10, V3: 63), v4: 10 ,underfitting(v5:22) 
+    X_train, X_test, y_train, y_test, scaler = data_extraction.prepare_data("CROX","max",10) # overfitting: (V1:22, V2:10, V3: 63), v4: 10 ,underfitting(v5:22) 
     sample_window = X_test[0:1] 
-    
-    # results = generate_credal_set(model, sample_window, scaler, K)
 
 
     results = evaluate(model, X_test, y_test, scaler, K)
