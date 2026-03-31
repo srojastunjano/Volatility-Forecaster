@@ -2,6 +2,7 @@ import tensorflow as tf
 from tensorflow.keras import layers
 from MCDropout import MCDropout
 
+@tf.keras.utils.register_keras_serializable()
 class PositionalEncoding(layers.Layer):
     def __init__(self, sequence_length, d_model, **kwargs):
         super(PositionalEncoding, self).__init__(**kwargs)
@@ -10,7 +11,7 @@ class PositionalEncoding(layers.Layer):
     def get_angles(self, pos, i, d_model):
         angles = 1 / tf.pow(10000.0, (2 * (i // 2)) / tf.cast(d_model, tf.float32))
         return pos * angles
-    
+
     def get_config(self):
         config = super().get_config()
         config.update({
@@ -34,9 +35,12 @@ class PositionalEncoding(layers.Layer):
         return pos_encoding[tf.newaxis, ...]
 
     def call(self, inputs):
-        return inputs + self.pos_encoding[:, :tf.shape(inputs)[1], :]
-    
+        # Match the sequence length of the current batch
+        seq_len = tf.shape(inputs)[1]
+        pos_sliced = self.pos_encoding[:, :seq_len, :]
 
+        # Ensure the encoding matches the input (bfloat16)
+        return inputs + tf.cast(pos_sliced, dtype=inputs.dtype)
 class TransformerEncoderBlock(layers.Layer):
     def __init__(self, d_model, num_heads, ff_dim, dropout_rate=0.1, **kwargs):
         super(TransformerEncoderBlock, self).__init__(**kwargs)
@@ -80,7 +84,7 @@ class TransformerEncoderBlock(layers.Layer):
     
 
 def build_transformer_backbone(input_shape, d_model, num_heads, ff_dim, num_layers, dropout_rate):
-    inputs = layers.Input(shape=input_shape) # (None, seq_len, features)
+    inputs = layers.Input(shape=input_shape) 
     
     x = layers.Dense(d_model)(inputs)
     x = PositionalEncoding(input_shape[0], d_model)(x)
@@ -93,8 +97,6 @@ def build_transformer_backbone(input_shape, d_model, num_heads, ff_dim, num_laye
     
     return tf.keras.Model(inputs=inputs, outputs=z_tilde, name="Transformer_Backbone")
 
-# Example Initialization:
-# (Sequence length = 22, Features = 12 from M-ALL dataset)
 backbone = build_transformer_backbone(
     input_shape=(22, 12), 
     d_model=64, 

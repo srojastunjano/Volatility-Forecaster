@@ -1,6 +1,6 @@
 import numpy as np
 import pandas as pd
-from sklearn.preprocessing import MinMaxScaler
+from sklearn.preprocessing import MinMaxScaler, StandardScaler
 import yfinance as yf
 
 
@@ -11,14 +11,12 @@ def get_realized_variance_yfinance(symbol, period="max"):
     # Switch to daily data for long-term horizons
     df = ticker.history(period=period, interval="1d")
     
-    # Calculate daily log returns
     df['log_return'] = np.log(df['Close'] / df['Close'].shift(1))
     
-    # Target: 252-day Rolling Realized Variance (Annualized)
-    # We square the returns and sum them over a 252-day sliding window
+    # we square the returns and sum them over a 252-day sliding window
     df['target_rv'] = df['log_return'].pow(2).rolling(window=252).sum()
     
-    # IMPORTANT: We must shift the target so we are predicting the FUTURE year
+    # We must shift the target so we are predicting the FUTURE year
     # based on the CURRENT sequence.
     df['target_rv'] = df['target_rv'].shift(-252)
     
@@ -52,7 +50,7 @@ def prepare_data(symbol='NVDA', period='max', seq_length=22):
     X_train_raw, X_test_raw = X_raw[:split_idx], X_raw[split_idx:]
     y_train_raw, y_test_raw = y_raw[:split_idx], y_raw[split_idx:]
     
-    scaler = MinMaxScaler()
+    scaler = StandardScaler()
     
     # must flatten X_train to fit the scaler, then reshape back to 3D
     # (samples * seq_length, features)
